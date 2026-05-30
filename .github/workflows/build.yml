@@ -6,6 +6,9 @@ on:
     tags: ['v*']
   workflow_dispatch: # allows manual trigger from GitHub UI
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     name: Build Windows (.exe)
