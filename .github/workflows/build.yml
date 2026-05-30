@@ -1,0 +1,108 @@
+name: Build Excelerate HSC
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch: # allows manual trigger from GitHub UI
+
+jobs:
+  build-windows:
+    name: Build Windows (.exe)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout electron repo
+        uses: actions/checkout@v4
+
+      - name: Clone WebFiles
+        run: git clone https://github.com/fhall2008/HSCSTUDY-Cloudflare-pages webfiles
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows installer
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload .exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Excelerate-HSC-Windows
+          path: dist/*.exe
+          retention-days: 30
+
+  build-mac:
+    name: Build macOS (.dmg)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout electron repo
+        uses: actions/checkout@v4
+
+      - name: Clone WebFiles
+        run: git clone https://github.com/fhall2008/HSCSTUDY-Cloudflare-pages webfiles
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build macOS installer
+        run: npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload .dmg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Excelerate-HSC-Mac
+          path: dist/*.dmg
+          retention-days: 30
+
+  release:
+    name: Create GitHub Release
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-latest
+    # Only create a release when pushing a version tag (e.g. v1.0.0)
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Excelerate-HSC-Windows
+          path: dist/
+
+      - name: Download Mac artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Excelerate-HSC-Mac
+          path: dist/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Excelerate HSC ${{ github.ref_name }}
+          body: |
+            ## Excelerate HSC ${{ github.ref_name }}
+
+            ### Download
+            - **Windows**: Download the `.exe` file and run it to install
+            - **macOS**: Download the `.dmg` file, open it, and drag Excelerate to Applications
+
+            ### What's new
+            See commit history for changes in this release.
+          files: dist/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
