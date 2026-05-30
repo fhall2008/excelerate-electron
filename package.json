@@ -1,0 +1,41 @@
+{
+  "name": "excelerate-hsc",
+  "version": "1.0.0",
+  "description": "Excelerate HSC — offline-first study platform for NSW Year 12",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:all": "electron-builder --win --mac",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "cors": "^2.8.5",
+    "electron-store": "^8.1.0",
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "au.edu.excelerate.hsc",
+    "productName": "Excelerate HSC",
+    "copyright": "Copyright 2025",
+    "directories": { "output": "dist" },
+    "files": ["src/**/*", "node_modules/**/*"],
+    "extraResources": [
+      { "from": "webfiles/project/WebFiles", "to": "WebFiles", "filter": ["**/*"] }
+    ],
+    "win": { "target": ["nsis"], "icon": "resources/icon.ico" },
+    "mac": { "target": ["dmg"], "icon": "resources/icon.icns", "category": "public.app-category.education" },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Excelerate HSC"
+    }
+  }
+}
