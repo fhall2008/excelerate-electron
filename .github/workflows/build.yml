@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Clone WebFiles
-        run: git clone https://x-access-token:${{ secrets.WEBFILES_PAT }}@github.com/fhall2008/Hall-Family-Systems/excelerate-web webfiles
+        run: git clone https://x-access-token:${{ secrets.WEBFILES_PAT }}@github.com/Hall-Family-Systems/excelerate-web webfiles
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Clone WebFiles
-        run: git clone https://x-access-token:${{ secrets.WEBFILES_PAT }}@github.com/fhall2008/Hall-Family-Systems/excelerate-web webfiles
+        run: git clone https://x-access-token:${{ secrets.WEBFILES_PAT }}@github.com/Hall-Family-Systems/excelerate-web webfiles
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
