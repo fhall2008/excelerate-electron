@@ -171,9 +171,30 @@ function setupRoutes(expressApp, store) {
   });
 
   // ── Subjects ──
-  expressApp.get('/subjects', (req, res) => {
+  expressApp.get('/subjects', async (req, res) => {
     const s = makeStore('subject');
-    const items = s.list().blobs.map(b => ({ id: b.key, ...b.value })).filter(x => !x.deletedAt);
+    let items = s.list().blobs.map(b => ({ id: b.key, ...b.value })).filter(x => !x.deletedAt);
+
+    // If no local subjects yet (first launch), pull from cloud immediately
+    if (items.length === 0) {
+      try {
+        const apiUrl = store.get('apiUrl');
+        if (apiUrl) {
+          const r = await fetch(apiUrl + '/subjects');
+          const data = await r.json();
+          const cloudItems = data.items || [];
+          // Save to local DB
+          cloudItems.forEach(subj => {
+            if (subj.id) s.set(subj.id, subj);
+          });
+          items = cloudItems;
+          console.log('[Server] Pulled', cloudItems.length, 'subjects from cloud on demand');
+        }
+      } catch(e) {
+        console.warn('[Server] Could not pull subjects from cloud:', e.message);
+      }
+    }
+
     res.json({ items });
   });
 
@@ -396,6 +417,9 @@ async function startLocalServer(port, store) {
   return new Promise((resolve, reject) => {
     try {
       initDb(store);
+      // Store the cloud API URL so endpoints can fall back to it
+      const CLOUD_API_URL = 'https://hscstudy-api.hallfamilygroup.workers.dev';
+      if (!store.get('apiUrl')) store.set('apiUrl', CLOUD_API_URL);
 
       const expressApp = express();
       expressApp.use(cors({ origin: '*' }));
